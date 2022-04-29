@@ -275,9 +275,6 @@ def mask_npercent_new(some_sentence, tokenizer, model):
         some_sentence = replace_word(decoded_preds[i], replaced_indexs[i], some_sentence)
     return some_sentence
 
-
-
-
 if __name__ == "__main__":
     # Default English languge model
     # Pre-trained English BERT model 
