@@ -1,3 +1,4 @@
+from hashlib import new
 import torch
 from transformers import BertTokenizer, BertForMaskedLM
 import random
@@ -275,6 +276,28 @@ def mask_npercent_new(some_sentence, tokenizer, model):
         some_sentence = replace_word(decoded_preds[i], replaced_indexs[i], some_sentence)
     return some_sentence
 
+################ With a dictionary ###################
+# Function to place mask tokens in sentence
+def get_mask_idxs(orig_sentence):
+    orig_sentence = orig_sentence.split()
+    num_words_to_mask = round(len(orig_sentence) * CORUPT_TOKENS_PERCENTAGE)
+    rnsmp = random.sample(range(0, len(orig_sentence)), num_words_to_mask)
+    # Ensures mask is not a punctuation 
+    for i in range(len(rnsmp)):
+        while orig_sentence[rnsmp[i]] in IGNORE_TOKENS:
+            rnsmp[i] = (rnsmp[i] + 1) % len(orig_sentence)
+    return rnsmp
+
+def with_dictionary(sentence, sent_dict):
+    mask_idxs = get_mask_idxs(sentence)
+    new_sentence = sentence.split()
+    for idx in mask_idxs:
+        list_of_preds = sent_dict[f'{idx}']
+        new_sentence[idx] = list_of_preds[random.randint(0, TOP_CLEAN-1)]
+    return ' '.join(new_sentence)
+    
+    
+    
 if __name__ == "__main__":
     # Default English languge model
     # Pre-trained English BERT model 

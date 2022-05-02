@@ -1,6 +1,6 @@
-from sentence_degenerator import mask_xpercent_words,mask_npercent_new
+from sentence_degenerator import mask_xpercent_words,mask_npercent_new, with_dictionary
 from constants import LAN, INPUT_FILE
-import in_place
+import json
 import pickle
 import cProfile, pstats
 ####################
@@ -87,21 +87,40 @@ def damage_corpus(pathname, output_name, language="EN"):
 				next_line = f"{mask_npercent_new(next_line,bert_tokenizer, bert_model)}\n"
 				output_file.write(next_line)
 				next_line = file.readline()
+    
+def damage_with_dict(path_to_dict):
+    output_name = INPUT_FILE[:-7]+".source"
+    big_dictionary = json.load(open(path_to_dict))
+    with open(INPUT_FILE, 'r') as file, open (output_name, 'w') as output_file:
+        sentence_id = 0
+        next_line = file.readline()
+        while next_line != '':
+            cur_sent_dict = big_dictionary[f'{sentence_id}']
+            line = f"{with_dictionary(next_line, cur_sent_dict)}\n"
+            output_file.write(line)
+            sentence_id+=1
+            next_line = file.readline()
+    
 
 if __name__ == "__main__":
-	langauges = ["EN", "SP", "RUS", 'HEB']
-	lan = langauges[LAN-1]
-	oFile = input("What would you like to call the output file: ")
- 
-	# profiler = cProfile.Profile()
-	# profiler.enable()
-	damage_corpus(INPUT_FILE,oFile, lan)
-	# profiler.disable()
-	# stats = pstats.Stats(profiler)
-	# stats.dump_stats('new_func4.pstats')
-	# stats = pstats.Stats(profiler).sort_stats('tottime')
-	# stats.print_stats()
-	# damage_corpus('simple_test.txt', 'simple_test.txt.source', "EN")
+	ans = input('Do you have a dictionary to use?\tY/n')
+	if ans.upper() == 'Y':
+		path_to_dict = input("Please enter the path to the dictionary: ")
+		damage_with_dict(path_to_dict)
+	else:
+		langauges = ["EN", "SP", "RUS", 'HEB']
+		lan = langauges[LAN-1]
+		oFile = input("What would you like to call the output file: ")
+
+		# profiler = cProfile.Profile()
+		# profiler.enable()
+		damage_corpus(INPUT_FILE,oFile, lan)
+		# profiler.disable()
+		# stats = pstats.Stats(profiler)
+		# stats.dump_stats('new_func4.pstats')
+		# stats = pstats.Stats(profiler).sort_stats('tottime')
+		# stats.print_stats()
+		# damage_corpus('simple_test.txt', 'simple_test.txt.source', "EN")
 	
  
 # damage_corpus('./sentences.txt')
