@@ -43,7 +43,8 @@ rusBert_model = pickle.load(open('../model_caches/rusBert_model.sav', 'rb'))
 # rusBert_model = BertForMaskedLM.from_pretrained("DeepPavlov/rubert-base-cased")
 
 
-def damage_corpus(pathname, output_name, language="EN"):
+def damage_corpus(pathname, language="EN"):
+	output_name = pathname[:-7]+".source"
 	if language == "HEB":
 		with open(pathname, 'r') as file, open(output_name, 'w') as output_file:
 			# for line in file:
@@ -103,24 +104,28 @@ def damage_with_dict(path_to_dict):
     
 
 if __name__ == "__main__":
-	ans = input('Do you have a dictionary to use?\tY/n')
+	ans = input('Do you have a dictionary to use?\tY/n    ')
 	if ans.upper() == 'Y':
 		path_to_dict = input("Please enter the path to the dictionary: ")
+		profiler = cProfile.Profile()
+		profiler.enable()
 		damage_with_dict(path_to_dict)
+		profiler.disable()
+		stats = pstats.Stats(profiler)
+		stats.dump_stats('../pstats_out/damage_with_dict.pstats')
+		stats = pstats.Stats(profiler).sort_stats('tottime')
+		stats.print_stats()
 	else:
 		langauges = ["EN", "SP", "RUS", 'HEB']
 		lan = langauges[LAN-1]
-		oFile = input("What would you like to call the output file: ")
-
-		# profiler = cProfile.Profile()
-		# profiler.enable()
-		damage_corpus(INPUT_FILE,oFile, lan)
-		# profiler.disable()
-		# stats = pstats.Stats(profiler)
-		# stats.dump_stats('new_func4.pstats')
-		# stats = pstats.Stats(profiler).sort_stats('tottime')
-		# stats.print_stats()
-		# damage_corpus('simple_test.txt', 'simple_test.txt.source', "EN")
+		profiler = cProfile.Profile()
+		profiler.enable()
+		damage_corpus(INPUT_FILE, lan)
+		profiler.disable()
+		stats = pstats.Stats(profiler)
+		stats.dump_stats('../pstats_out/old_old_func.pstats')
+		stats = pstats.Stats(profiler).sort_stats('tottime')
+		stats.print_stats()
 	
  
 # damage_corpus('./sentences.txt')
