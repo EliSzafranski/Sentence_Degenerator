@@ -3,7 +3,7 @@ import torch
 import pickle
 import string
 import os
-from time import sleep
+import time
 from tqdm import tqdm
 IGNORE_TOKENS = set(string.punctuation)
 IGNORE_TOKENS.update(['[PAD]', '[UNK]', '...'])
@@ -84,5 +84,7 @@ if __name__ == '__main__':
     else:
         bert_tokenizer = pickle.load(open('../model_caches/heBert_tokenizer.sav', 'rb'))
         bert_model = pickle.load(open('../model_caches/heBert_model.sav', 'rb'))
-
+        
+    start_time = time.time()
     save_dict_to_file(input_file, bert_tokenizer, bert_model)
+    print("--- %s seconds ---" % (time.time() - start_time))
