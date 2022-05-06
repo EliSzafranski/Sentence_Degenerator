@@ -4,9 +4,12 @@ import pickle
 import string
 import os
 import time
-from tqdm import tqdm
+from os.path import exists
+from get_wc import get_top_n_percent
+import ast
 IGNORE_TOKENS = set(string.punctuation)
 IGNORE_TOKENS.update(['[PAD]', '[UNK]', '...'])
+
 
 ################################################################################
 def new_decode_pt2(tokenizer, tokenized_prediction):
@@ -42,16 +45,21 @@ def get_sentence_dict(some_sentence, tokenizer, model):
     sent_list = some_sentence.split()
     sent_len = len(sent_list)
     while idx < sent_len:
-        if sent_list[idx] in IGNORE_TOKENS:
+        if sent_list[idx] not in set_of_allowed_words:
+        # if sent_list[idx] in IGNORE_TOKENS:
             idx += 1
             continue
         sent_dict[idx] = get_word_predictions(sent_list.copy(), idx, tokenizer, model)
         idx+=1
     return sent_dict
 
-def save_dict_to_file(pathname, tokenizer, model):
+def save_dict_to_file(pathname, tokenizer, model, path_to_set):
+    global set_of_allowed_words 
+    with open(path_to_set, 'r') as f:
+        set_of_allowed_words = ast.literal_eval(f.read())
     num_lines = os.popen(f"wc -l {pathname}").read()
-    num_lines = num_lines[5:5+num_lines[5:].index(' ')]
+    num_lines = [int(s) for s in num_lines.split() if s.isdigit()][0]
+    # num_lines = num_lines[5:5+num_lines[5:].index(' ')]
     with open(pathname, 'r') as file, open (f"{pathname}.dict", 'w') as output_file:
         output_file.write('{')
         next_line = file.readline()
@@ -84,7 +92,16 @@ if __name__ == '__main__':
     else:
         bert_tokenizer = pickle.load(open('../model_caches/heBert_tokenizer.sav', 'rb'))
         bert_model = pickle.load(open('../model_caches/heBert_model.sav', 'rb'))
+
+    set_exists = input("Do you have a set of words to use? Y/n ")
+    set_exists = set_exists.lower()
+    if set_exists == 'y':
+        path_to_set = input("Enter the path to the set: ")
+    else:
+        pot = int(input("What percentage of the words would you like?  "))
+        get_top_n_percent(pot)
+        path_to_set = f"{input_file}.top_{pot}_percent_set"
         
     start_time = time.time()
-    save_dict_to_file(input_file, bert_tokenizer, bert_model)
+    save_dict_to_file(input_file, bert_tokenizer, bert_model, path_to_set)
     print("--- %s seconds ---" % (time.time() - start_time))
