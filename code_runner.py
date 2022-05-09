@@ -112,7 +112,7 @@ if __name__ == "__main__":
 		damage_with_dict(path_to_dict)
 		profiler.disable()
 		stats = pstats.Stats(profiler)
-		stats.dump_stats('../pstats_out/damage_with_dict.pstats')
+		# stats.dump_stats('../pstats_out/damage_with_dict.pstats')
 		stats = pstats.Stats(profiler).sort_stats('tottime')
 		stats.print_stats()
 	else:
@@ -123,7 +123,7 @@ if __name__ == "__main__":
 		damage_corpus(INPUT_FILE, lan)
 		profiler.disable()
 		stats = pstats.Stats(profiler)
-		stats.dump_stats('../pstats_out/old_old_func.pstats')
+		# stats.dump_stats('../pstats_out/old_old_func.pstats')
 		stats = pstats.Stats(profiler).sort_stats('tottime')
 		stats.print_stats()
 	

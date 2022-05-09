@@ -222,8 +222,13 @@ def place_masks(orig_sentence, tokenizer):
     rnsmp = random.sample(range(0, len(orig_sentence)), num_words_to_mask)
     # Ensures mask is not a punctuation 
     for i in range(len(rnsmp)):
+        counter = 0
         while orig_sentence[rnsmp[i]] in IGNORE_TOKENS:
             rnsmp[i] = (rnsmp[i] + 1) % len(orig_sentence)
+            counter += 1
+            if counter >= len(orig_sentence):
+                print(' '.join(orig_sentence))
+                break
         orig_sentence[rnsmp[i]] = tokenizer.mask_token
     rnsmp.sort()
     return rnsmp,' '.join(orig_sentence)
@@ -278,18 +283,25 @@ def mask_npercent_new(some_sentence, tokenizer, model):
 
 ################ With a dictionary ###################
 # Function to place mask tokens in sentence
-def get_mask_idxs(orig_sentence):
+def get_mask_idxs(orig_sentence, sent_dict):
     orig_sentence = orig_sentence.split()
     num_words_to_mask = round(len(orig_sentence) * CORUPT_TOKENS_PERCENTAGE)
     rnsmp = random.sample(range(0, len(orig_sentence)), num_words_to_mask)
     # Ensures mask is not a punctuation 
     for i in range(len(rnsmp)):
-        while orig_sentence[rnsmp[i]] in IGNORE_TOKENS:
+        counter = 0
+        while str(rnsmp[i]) not in sent_dict:
             rnsmp[i] = (rnsmp[i] + 1) % len(orig_sentence)
+            counter += 1
+            if counter >= len(orig_sentence):
+                print(' '.join(orig_sentence))
+                return []
     return rnsmp
 
 def with_dictionary(sentence, sent_dict):
-    mask_idxs = get_mask_idxs(sentence)
+    mask_idxs = get_mask_idxs(sentence, sent_dict)
+    if len(mask_idxs) == 0:
+        return sentence
     new_sentence = sentence.split()
     for idx in mask_idxs:
         list_of_preds = sent_dict[f'{idx}']
