@@ -3,6 +3,9 @@ from constants import LAN, INPUT_FILE
 import json
 import pickle
 import cProfile, pstats
+import concurrent.futures
+import time
+from itertools import repeat
 ####################
 # BERT Models running locally with saved models
 ###############
@@ -44,13 +47,25 @@ import cProfile, pstats
 
 
 def damage_corpus(pathname, tokenizer, model):
+    #### single threaded version 
+    # output_name = pathname[:-7]+".source"
+    # with open(pathname, 'r') as file, open(output_name, 'w') as output_file:
+    #     next_line = file.readline()
+    #     while next_line != "":
+    #         next_line = f"{mask_npercent_new(next_line, tokenizer, model)}\n"
+    #         output_file.write(next_line)
+    #         next_line = file.readline()
+    ########multi threaded version 
+    entire_text = []
+    with open(pathname) as f:
+        for line in f:
+            entire_text.append(line)
+            
     output_name = pathname[:-7]+".source"
-    with open(pathname, 'r') as file, open(output_name, 'w') as output_file:
-        next_line = file.readline()
-        while next_line != "":
-            next_line = f"{mask_npercent_new(next_line, tokenizer, model)}\n"
-            output_file.write(next_line)
-            next_line = file.readline()
+    with open(output_name, 'w') as output_file:
+            with concurrent.futures.ThreadPoolExecutor() as threads:
+                for result in threads.map(mask_npercent_new, entire_text, repeat(tokenizer), repeat(model)):
+                    output_file.write(f"{result}\n")
     
 def damage_with_dict(path_to_dict):
     output_name = INPUT_FILE[:-7]+".source"
@@ -93,14 +108,16 @@ if __name__ == "__main__":
 		else:
 			bert_tokenizer = pickle.load(open('../model_caches/heBert_tokenizer.sav', 'rb'))
 			bert_model = pickle.load(open('../model_caches/heBert_model.sav', 'rb'))
-		profiler = cProfile.Profile()
-		profiler.enable()
+		# profiler = cProfile.Profile()
+		# profiler.enable()
+		start_time = time.perf_counter()
 		damage_corpus(INPUT_FILE, bert_tokenizer, bert_model)
-		profiler.disable()
-		stats = pstats.Stats(profiler)
-		# stats.dump_stats('../pstats_out/old_old_func.pstats')
-		stats = pstats.Stats(profiler).sort_stats('tottime')
-		stats.print_stats()
+		print("--- %s seconds ---" % (time.perf_counter() - start_time))
+		# profiler.disable()
+		# stats = pstats.Stats(profiler)
+		# # stats.dump_stats('../pstats_out/old_old_func.pstats')
+		# stats = pstats.Stats(profiler).sort_stats('tottime')
+		# stats.print_stats()
 	
  
 # damage_corpus('./sentences.txt')

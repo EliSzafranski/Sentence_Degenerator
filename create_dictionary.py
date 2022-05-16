@@ -102,6 +102,6 @@ if __name__ == '__main__':
         get_top_n_percent(pot)
         path_to_set = f"{input_file}.top_{pot}_percent_set"
         
-    start_time = time.time()
+    start_time = time.perf_counter()
     save_dict_to_file(input_file, bert_tokenizer, bert_model, path_to_set)
-    print("--- %s seconds ---" % (time.time() - start_time))
+    print("--- %s seconds ---" % (time.perf_counter() - start_time))

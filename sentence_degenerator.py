@@ -219,6 +219,7 @@ def test1(btkz, bm):
 def place_masks(orig_sentence, tokenizer):
     orig_sentence = orig_sentence.split()
     num_words_to_mask = round(len(orig_sentence) * CORUPT_TOKENS_PERCENTAGE)
+    num_words_to_mask = num_words_to_mask if num_words_to_mask > 0 else 1
     rnsmp = random.sample(range(0, len(orig_sentence)), num_words_to_mask)
     # Ensures mask is not a punctuation 
     for i in range(len(rnsmp)):
