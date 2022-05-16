@@ -8,24 +8,24 @@ import cProfile, pstats
 ###############
 
 # Pre-trained English BERT model 
-bert_tokenizer = pickle.load(open('../model_caches/bert_tokenizer.sav', 'rb'))
-bert_model = pickle.load(open('../model_caches/bert_model.sav', 'rb'))
+# bert_tokenizer = pickle.load(open('../model_caches/bert_tokenizer.sav', 'rb'))
+# bert_model = pickle.load(open('../model_caches/bert_model.sav', 'rb'))
 
-# Multilanguage BERT model
-multi_lang_tokenizer = pickle.load(open('../model_caches/multi_lang_tokenizer.sav', 'rb'))
-multi_lang_model = pickle.load(open('../model_caches/multi_lang_model.sav', 'rb'))
+# # Multilanguage BERT model
+# multi_lang_tokenizer = pickle.load(open('../model_caches/multi_lang_tokenizer.sav', 'rb'))
+# multi_lang_model = pickle.load(open('../model_caches/multi_lang_model.sav', 'rb'))
 
-# Monolingual Spanish BERT model
-spanBert_tokenizer = pickle.load(open('../model_caches/spanBert_tokenizer.sav', 'rb'))
-spanBert_model = pickle.load(open('../model_caches/spanBert_model.sav', 'rb'))
+# # Monolingual Spanish BERT model
+# spanBert_tokenizer = pickle.load(open('../model_caches/spanBert_tokenizer.sav', 'rb'))
+# spanBert_model = pickle.load(open('../model_caches/spanBert_model.sav', 'rb'))
 
-# Monolingual Hebrew BERT model
-heBert_tokenizer = pickle.load(open('../model_caches/heBert_tokenizer.sav', 'rb'))
-heBert_model = pickle.load(open('../model_caches/heBert_model.sav', 'rb'))
+# # Monolingual Hebrew BERT model
+# heBert_tokenizer = pickle.load(open('../model_caches/heBert_tokenizer.sav', 'rb'))
+# heBert_model = pickle.load(open('../model_caches/heBert_model.sav', 'rb'))
 
-# Monolingual Russian BET model
-rusBert_tokenizer = pickle.load(open('../model_caches/rusBert_tokenizer.sav', 'rb'))
-rusBert_model = pickle.load(open('../model_caches/rusBert_model.sav', 'rb'))
+# # Monolingual Russian BET model
+# rusBert_tokenizer = pickle.load(open('../model_caches/rusBert_tokenizer.sav', 'rb'))
+# rusBert_model = pickle.load(open('../model_caches/rusBert_model.sav', 'rb'))
 
 ####################
 # BERT Models when running code on the server, downloading the model each time
@@ -43,51 +43,14 @@ rusBert_model = pickle.load(open('../model_caches/rusBert_model.sav', 'rb'))
 # rusBert_model = BertForMaskedLM.from_pretrained("DeepPavlov/rubert-base-cased")
 
 
-def damage_corpus(pathname, language="EN"):
-	output_name = pathname[:-7]+".source"
-	if language == "HEB":
-		with open(pathname, 'r') as file, open(output_name, 'w') as output_file:
-			# for line in file:
-			# 	line = f"{mask_xpercent_words(line, heBert_tokenizer, heBert_model)}\n"
-   			#	output_file.write(line)
-			output_file.write(line)
-			next_line = file.readline()
-			while next_line != "":
-				next_line = line = f"{mask_xpercent_words(next_line, heBert_tokenizer, heBert_model)}\n"
-				output_file.write(next_line)
-				next_line = file.readline()
-
-	elif language == "SP":
-		with open(pathname, 'r') as file, open(output_name, 'w') as output_file:
-			# for line in file:
-			# 	line = f"{mask_xpercent_words(line, spanBert_tokenizer, spanBert_model)}\n"
-			# 	output_file.write(line)
-			next_line = file.readline()
-			while next_line != "":
-				next_line = f"{mask_npercent_new(next_line, spanBert_tokenizer, spanBert_model)}\n"
-				output_file.write(next_line)
-				next_line = file.readline()
-	elif language == "RUS":
-		with open(pathname, 'r') as file, open(output_name, 'w') as output_file:
-			# for line in file:
-			# 	line = f"{mask_xpercent_words(line, rusBert_tokenizer, rusBert_model)}\n"
-			# 	output_file.write(line)
-			next_line = file.readline()
-			while next_line != "":
-				next_line = f"{mask_npercent_new(next_line, rusBert_tokenizer, rusBert_model)}\n"
-				output_file.write(next_line)
-				next_line = file.readline()
-	else:
-		with open(pathname, 'r') as file, open(output_name, 'w') as output_file:
-			# for line in file:
-			# 	line = f"{mask_xpercent_words(line, bert_tokenizer, bert_model)}\n"
-			# 	output_file.write(line)
-			next_line = file.readline()
-			while next_line != "":
-				# next_line = f"{mask_xpercent_words(next_line, bert_tokenizer, bert_model)}\n"
-				next_line = f"{mask_npercent_new(next_line,bert_tokenizer, bert_model)}\n"
-				output_file.write(next_line)
-				next_line = file.readline()
+def damage_corpus(pathname, tokenizer, model):
+    output_name = pathname[:-7]+".source"
+    with open(pathname, 'r') as file, open(output_name, 'w') as output_file:
+        next_line = file.readline()
+        while next_line != "":
+            next_line = f"{mask_npercent_new(next_line, tokenizer, model)}\n"
+            output_file.write(next_line)
+            next_line = file.readline()
     
 def damage_with_dict(path_to_dict):
     output_name = INPUT_FILE[:-7]+".source"
@@ -118,9 +81,21 @@ if __name__ == "__main__":
 	else:
 		langauges = ["EN", "SP", "RUS", 'HEB']
 		lan = langauges[LAN-1]
+		if lan == 'EN':
+			bert_tokenizer = pickle.load(open('../model_caches/bert_tokenizer.sav', 'rb'))
+			bert_model = pickle.load(open('../model_caches/bert_model.sav', 'rb'))
+		elif lan == "SP":
+			bert_tokenizer = pickle.load(open('../model_caches/spanBert_tokenizer.sav', 'rb'))
+			bert_model = pickle.load(open('../model_caches/spanBert_model.sav', 'rb'))
+		elif lan == "RU":
+			bert_tokenizer = pickle.load(open('../model_caches/rusBert_tokenizer.sav', 'rb'))
+			bert_model = pickle.load(open('../model_caches/rusBert_model.sav', 'rb'))
+		else:
+			bert_tokenizer = pickle.load(open('../model_caches/heBert_tokenizer.sav', 'rb'))
+			bert_model = pickle.load(open('../model_caches/heBert_model.sav', 'rb'))
 		profiler = cProfile.Profile()
 		profiler.enable()
-		damage_corpus(INPUT_FILE, lan)
+		damage_corpus(INPUT_FILE, bert_tokenizer, bert_model)
 		profiler.disable()
 		stats = pstats.Stats(profiler)
 		# stats.dump_stats('../pstats_out/old_old_func.pstats')
