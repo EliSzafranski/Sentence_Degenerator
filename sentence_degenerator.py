@@ -1,4 +1,5 @@
 from hashlib import new
+from telnetlib import SE
 import torch
 from transformers import BertTokenizer, BertForMaskedLM
 import random
@@ -8,9 +9,11 @@ import numpy as np
 import math
 import pickle
 import cProfile,pstats
+import ast
 
-from constants import TOP_CLEAN, TOP_K, CORUPT_TOKENS_PERCENTAGE, IGNORE_TOKENS, DEVICE
-
+from constants import TOP_CLEAN, TOP_K, CORUPT_TOKENS_PERCENTAGE, IGNORE_TOKENS, DEVICE, SET_OF_WORDS
+with(open(SET_OF_WORDS)) as f:
+    SET_OF_WORDS = ast.literal_eval(f.read())
 
 # Given a tokenized sentence, turn it to a human readable form 
 def decode(tokenizer, pred_idx, top_clean):
@@ -98,7 +101,7 @@ def choose_word_to_predict(sentence):
     ####### PRE
     #while words[idx_to_replace] in symbols:
     ################
-    while words[idx_to_replace] in IGNORE_TOKENS:   
+    while words[idx_to_replace] not in SET_OF_WORDS:   
         idx_to_replace = random.randint(0, len(words)-1)
     words[idx_to_replace] = '<TO_REPLACE>'
     return ' '.join(words),idx_to_replace
@@ -224,7 +227,7 @@ def place_masks(orig_sentence, tokenizer):
     # Ensures mask is not a punctuation 
     for i in range(len(rnsmp)):
         counter = 0
-        while orig_sentence[rnsmp[i]] in IGNORE_TOKENS:
+        while orig_sentence[rnsmp[i]] not in SET_OF_WORDS:
             rnsmp[i] = (rnsmp[i] + 1) % len(orig_sentence)
             counter += 1
             if counter >= len(orig_sentence):
