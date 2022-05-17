@@ -9,7 +9,7 @@ import math
 import pickle
 import cProfile,pstats
 
-from constants import TOP_CLEAN, TOP_K, CORUPT_TOKENS_PERCENTAGE, IGNORE_TOKENS
+from constants import TOP_CLEAN, TOP_K, CORUPT_TOKENS_PERCENTAGE, IGNORE_TOKENS, DEVICE
 
 
 # Given a tokenized sentence, turn it to a human readable form 
@@ -264,12 +264,13 @@ def replace_word(top_word_predictions, idx_to_replace, orig_sentence):
 def mask_npercent_new(some_sentence, tokenizer, model):
     replaced_indexs,snt = place_masks(some_sentence, tokenizer)
     # Tokenizes the input sentence
-    tokenized_sentence = tokenizer(snt, return_tensors='pt')
+    tokenized_sentence = tokenizer(snt, return_tensors='pt').to(DEVICE)
 #     print(tokenized_sentence)
     # Returns the indexes of the mask tokens
     mask_idx = torch.where(tokenized_sentence['input_ids'] == tokenizer.mask_token_id)[1].tolist()
     
     # Gets the predictions of all the masked words
+    model = model.to(DEVICE)
     model_uncleaned_output = model(**tokenized_sentence)
 #     print(mask_idx)
 

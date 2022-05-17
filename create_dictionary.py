@@ -1,3 +1,4 @@
+from asyncio import subprocess
 import json
 import torch
 import pickle
@@ -18,19 +19,20 @@ def new_decode_pt2(tokenizer, tokenized_prediction):
         interim = tokenizer.decode(w)
         # clean the deocded value by splitting by spaces and joining to one big string
         tkn = ''.join(interim.split())
-        # if tkn not in IGNORE_TOKENS:
+        if tkn not in IGNORE_TOKENS:
         #     # more cleaning of decoded value, make sure token isn't punctuation
-        #     tokens.append(tkn.replace('##', ''))
-        tokens.append(tkn.replace('##', ''))
+             tokens.append(tkn.replace('##', ''))
+        #tokens.append(tkn.replace('##', ''))
     return tokens
 
 def get_word_predictions(sentence, index_of_mask, tokenizer, model):
     sentence[index_of_mask] = tokenizer.mask_token
     # print(' '.join(sentence))
-    tokenized_sentence = tokenizer(' '.join(sentence), return_tensors='pt')
+    tokenized_sentence = tokenizer(' '.join(sentence), return_tensors='pt').to(device)
 #     print(tokenized_sentence)
     mask_idx = torch.where(tokenized_sentence['input_ids'] == tokenizer.mask_token_id)[1].tolist()
 #     print(mask_idx)
+    model = model.to(device)
     model_uncleaned_output = model(**tokenized_sentence)
 #     print(model_uncleaned_output)
     tokenized_predictions = model_uncleaned_output[0][0, mask_idx, :].topk(150).indices.tolist()[0]
@@ -102,6 +104,15 @@ if __name__ == '__main__':
         get_top_n_percent(pot)
         path_to_set = f"{input_file}.top_{pot}_percent_set"
         
+    
+    if torch.cuda.is_available():
+        subprocess.run(["nvidia-smi"])
+        device_num = int(input("Which GPU would you like to use? "))
+        dev = f"cuda:{device_num}"
+    else:
+        dev = "cpu"
+    global device
+    device = torch.device(dev)
     start_time = time.perf_counter()
     save_dict_to_file(input_file, bert_tokenizer, bert_model, path_to_set)
     print("--- %s seconds ---" % (time.perf_counter() - start_time))

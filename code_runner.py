@@ -47,7 +47,7 @@ from itertools import repeat
 
 
 def damage_corpus(pathname, tokenizer, model):
-    #### single threaded version 
+    #### single threaded version ########
     # output_name = pathname[:-7]+".source"
     # with open(pathname, 'r') as file, open(output_name, 'w') as output_file:
     #     next_line = file.readline()
@@ -55,6 +55,8 @@ def damage_corpus(pathname, tokenizer, model):
     #         next_line = f"{mask_npercent_new(next_line, tokenizer, model)}\n"
     #         output_file.write(next_line)
     #         next_line = file.readline()
+    ##########
+    
     ########multi threaded version 
     entire_text = []
     with open(pathname) as f:
